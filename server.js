@@ -18,7 +18,7 @@ app.use(express.json());
 // Express Session
 app.use(
   session({
-    secret: "secret", // Replace 'secret' with a real secret key
+    secret: process.env.SESSION_SECRET || "default_secret", // Use environment variable
     resave: true,
     saveUninitialized: true,
   })
@@ -28,8 +28,25 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Set up routes here
-// ...
+// Import routes
+const userRoutes = require("./routes/users");
+const serviceRoutes = require("./routes/services");
+const requestRoutes = require("./routes/requests");
+const reviewRoutes = require("./routes/reviews");
+// Add other route imports as necessary
+
+// Use routes
+app.use("/users", userRoutes);
+app.use("/services", serviceRoutes);
+app.use("/requests", requestRoutes);
+app.use("/reviews", reviewRoutes);
+// Add other route uses as necessary
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 
 const PORT = process.env.PORT || 5000;
 
