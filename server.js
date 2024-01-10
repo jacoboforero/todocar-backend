@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
 const connectDB = require("./config/database");
+const errorHandlingMiddleware = require("./middleware/errorHandling");
 
 // Passport Config
 require("./config/passport")(passport);
@@ -47,6 +48,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
+
+app.use(errorHandlingMiddleware);
 
 const PORT = process.env.PORT || 5000;
 
