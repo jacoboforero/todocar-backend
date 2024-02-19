@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Review = require("../models/Review"); // Importing the Review model
-const ensureAuthenticated = require("../middleware/authentication"); // Authentication middleware
+const Review = require("../../models/Review"); // Importing the Review model
+const ensureAuthenticated = require("../../middleware/authentication"); // Authentication middleware
 
 // @route   GET /reviews
 // @desc    Get all reviews
