@@ -4,12 +4,39 @@ const User = require("../../models/User"); // Adjust the path as necessary
 
 // Registration Route
 router.post("/register", async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    location,
+    car,
+    primaryOccupation,
+    languages,
+    role,
+    password,
+  } = req.body;
 
   try {
-    // Validate input (basic example, expand as needed)
-    if (!username || !email || !password || !role) {
-      return res.status(400).json({ msg: "Please enter all fields" });
+    // Validate input
+    const missingFields = [];
+    if (!firstName) missingFields.push("firstName");
+    if (!lastName) missingFields.push("lastName");
+    if (!email) missingFields.push("email");
+    if (!phone) missingFields.push("phone");
+    if (!location) missingFields.push("location");
+    if (!languages || languages.length === 0) missingFields.push("languages");
+    if (!role) missingFields.push("role");
+    if (!password) missingFields.push("password");
+
+    if (role === "seller" && !primaryOccupation) {
+      missingFields.push("primaryOccupation");
+    }
+
+    if (missingFields.length > 0) {
+      return res
+        .status(400)
+        .json({ msg: `Please enter all fields: ${missingFields.join(", ")}` });
     }
 
     // Check for existing user
@@ -20,10 +47,16 @@ router.post("/register", async (req, res) => {
 
     // Create a new user
     const newUser = new User({
-      username,
+      firstName,
+      lastName,
       email,
-      password,
+      phone,
+      location,
+      car,
+      primaryOccupation: role === "seller" ? primaryOccupation : undefined,
+      languages,
       role,
+      password,
     });
 
     // Save user
@@ -32,7 +65,7 @@ router.post("/register", async (req, res) => {
     // Send response (consider sending a JWT token here if implementing token-based authentication)
     res.status(201).json({
       msg: "User registered successfully",
-      user: { id: newUser.id, username, email, role },
+      user: { id: newUser.id, firstName, lastName, email, role },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
