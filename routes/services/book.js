@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Request = require("../../models/Request");
 const Service = require("../../models/Service");
-const ensureAuthenticated = require("../../middleware/authentication");
+const { ensureAuthenticated } = require("../../middleware/authentication");
 
 // POST route to create a new booking
 router.post("/", ensureAuthenticated, async (req, res) => {

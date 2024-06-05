@@ -13,8 +13,9 @@ router.post("/register", async (req, res) => {
     car,
     primaryOccupation,
     languages,
-    role,
     password,
+    role,
+    qualifications,
   } = req.body;
 
   try {
@@ -25,7 +26,6 @@ router.post("/register", async (req, res) => {
     if (!email) missingFields.push("email");
     if (!phone) missingFields.push("phone");
     if (!location) missingFields.push("location");
-    if (!languages || languages.length === 0) missingFields.push("languages");
     if (!role) missingFields.push("role");
     if (!password) missingFields.push("password");
 
@@ -57,6 +57,7 @@ router.post("/register", async (req, res) => {
       languages,
       role,
       password,
+      qualifications,
     });
 
     // Save user

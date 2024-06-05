@@ -1,8 +1,8 @@
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+
 module.exports = function (passport) {
   const LocalStrategy = require("passport-local").Strategy;
-  // const GoogleStrategy = require("passport-google-oauth20").Strategy;
   const bcrypt = require("bcryptjs");
-
   const User = require("../models/User"); // Adjust the path as necessary
 
   // Local Strategy
@@ -11,15 +11,12 @@ module.exports = function (passport) {
       { usernameField: "email" },
       async (email, password, done) => {
         try {
-          // Find user by email
           const user = await User.findOne({ email: email });
           if (!user) {
             return done(null, false, {
               message: "That email is not registered",
             });
           }
-
-          // Match password
           bcrypt.compare(password, user.password, (err, isMatch) => {
             if (err) throw err;
             if (isMatch) {
@@ -35,49 +32,54 @@ module.exports = function (passport) {
     )
   );
 
-  //Google Strategy not yet implemented
+  // Google Strategy
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: "http://localhost:5000/users/auth/google/callback",
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const existingUser = await User.findOne({ googleId: profile.id });
+          if (existingUser) {
+            return done(null, existingUser);
+          }
 
-  // passport.use(
-  //   new GoogleStrategy(
-  //     {
-  //       clientID: process.env.GOOGLE_CLIENT_ID,
-  //       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  //       callbackURL: "/auth/google/callback",
-  //     },
-  //     async (accessToken, refreshToken, profile, done) => {
-  //       try {
-  //         // Check if user already exists in your db
-  //         const existingUser = await User.findOne({ googleId: profile.id });
-  //         if (existingUser) {
-  //           return done(null, existingUser);
-  //         }
+          const newUser = new User({
+            googleId: profile.id,
+            displayName: profile.displayName,
+            firstName: profile.name.givenName,
+            lastName: profile.name.familyName,
+            email: profile.emails[0].value,
+            role: "buyer", // Default role, adjust as needed
+          });
 
-  //         // If not, create a new user
-  //         const newUser = await new User({
-  //           googleId: profile.id,
-  //           displayName: profile.displayName,
-  //           firstName: profile.name.givenName,
-  //           lastName: profile.name.familyName,
-  //           email: profile.emails[0].value,
-  //           // add more fields as necessary
-  //         }).save();
-  //         done(null, newUser);
-  //       } catch (err) {
-  //         done(err, null);
-  //       }
-  //     }
-  //   )
-  // );
+          await newUser.save();
+          done(null, newUser);
+        } catch (err) {
+          done(err, null);
+        }
+      }
+    )
+  );
 
   // Serialize User
   passport.serializeUser((user, done) => {
-    done(null, user.id);
+    console.log("Serializing user:", user); // Debug statement
+    process.nextTick(() => {
+      done(null, user.id);
+    });
   });
 
   // Deserialize User
   passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-      done(err, user);
+    process.nextTick(() => {
+      User.findById(id, (err, user) => {
+        console.log("Deserializing user:", user); // Debug statement
+        done(err, user);
+      });
     });
   });
 };

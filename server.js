@@ -4,6 +4,7 @@ const passport = require("passport");
 const connectDB = require("./config/database");
 const errorHandlingMiddleware = require("./middleware/errorHandling");
 const cors = require("cors");
+const MongoStore = require("connect-mongo");
 
 // Passport Config
 require("./config/passport")(passport);
@@ -13,25 +14,43 @@ const app = express();
 // Connect to Database
 connectDB();
 
+//cors middleware
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Frontend URL
+    credentials: true, // Allow cookies to be sent
+  })
+);
+
 // Body Parser
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Express Session
+// Express Session Middleware
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "default_secret", // Use environment variable
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }), // Persistent session store
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // true in production
+      httpOnly: true, // Prevents client-side JS from reading the cookie
+      sameSite: "lax", // Helps with CSRF protection
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
   })
 );
+
+app.use((req, res, next) => {
+  console.log("Session ID:", req.sessionID);
+  console.log("Session:", req.session);
+  next();
+});
 
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
-
-//cors middleware
-app.use(cors());
 
 // Import routes
 const userRoutes = require("./routes/users");
@@ -50,7 +69,7 @@ app.use("/reviews", reviewRoutes);
 // Global error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send("Something broke!");
+  res.status(500).send("Something broke oh no!");
 });
 
 app.use(errorHandlingMiddleware);

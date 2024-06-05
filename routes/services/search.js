@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Service = require("../../models/Service");
-const ensureAuthenticated = require("../../middleware/authentication");
+const { ensureAuthenticated } = require("../../middleware/authentication");
 
 // Implement full-text search on 'name' and 'description' fields
 Service.createIndexes({ name: "text", description: "text" });

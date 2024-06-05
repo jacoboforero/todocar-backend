@@ -4,11 +4,15 @@ const bcrypt = require("bcryptjs");
 const UserSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
   },
   lastName: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
   },
   email: {
     type: String,
@@ -17,11 +21,15 @@ const UserSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
   },
   location: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
   },
   car: {
     make: { type: String },
@@ -31,12 +39,14 @@ const UserSchema = new mongoose.Schema({
   primaryOccupation: {
     type: String,
     required: function () {
-      return this.role === "seller";
+      return this.role === "seller" && !this.googleId;
     },
   },
   languages: {
     type: [String],
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
   },
   role: {
     type: String,
@@ -49,7 +59,19 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
+  },
+  qualifications: {
+    type: [String],
+    required: function () {
+      return this.role === "seller" && !this.googleId;
+    },
+  },
+  googleId: {
+    type: String,
+    required: false,
   },
 });
 
@@ -58,7 +80,10 @@ UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   const salt = await bcrypt.genSalt(10);
+  console.log("Unhashed Password:", this.password);
   this.password = await bcrypt.hash(this.password, salt);
+  console.log("Hashed Password:", this.password); // Debug statement
+  next();
   next();
 });
 

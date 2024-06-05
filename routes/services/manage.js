@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const Request = require("../../models/Request");
-const ensureAuthenticated = require("../../middleware/authentication");
+const { ensureAuthenticated } = require("../../middleware/authentication");
 
 // PUT route to update the status of a booking
 router.put("/:requestId", ensureAuthenticated, async (req, res) => {

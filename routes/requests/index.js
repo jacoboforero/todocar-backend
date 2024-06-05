@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Request = require("../../models/Request"); // Importing the Request model
-const ensureAuthenticated = require("../../middleware/authentication"); // Authentication middleware
+const { ensureAuthenticated } = require("../../middleware/authentication"); // Authentication middleware
 
 // @route   GET /requests
 // @desc    Get all requests
